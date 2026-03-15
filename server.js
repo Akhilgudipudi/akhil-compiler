@@ -1,117 +1,121 @@
-const express = require("express")
-const fs = require("fs")
-const { spawn } = require("child_process")
+{variant=“standard” id=“serverjs-full-updated”}
+const express = require(“express”)
+const fs = require(“fs”)
+const { exec } = require(“child_process”)
+const path = require(“path”)
 
 const app = express()
 
 app.use(express.json())
-app.use(express.static("public"))
+app.use(express.static(“public”))
 
-if(!fs.existsSync("codes")){
-fs.mkdirSync("codes")
+const codesDir = path.join(__dirname,“codes”)
+
+if(!fs.existsSync(codesDir)){
+fs.mkdirSync(codesDir)
 }
 
-app.post("/run",(req,res)=>{
+app.post(”/run”,(req,res)=>{
 
-const {code,language,input}=req.body
+const {code,language,input} = req.body
 
-let filename=""
+let filePath
+let compileCmd
+let runCmd
 
-function runProgram(cmd,args=[]){
+if(language===“python”){
 
-const process = spawn(cmd,args)
+filePath = path.join(codesDir,“main.py”)
 
-let output=""
-let error=""
+fs.writeFileSync(filePath,code)
 
-process.stdout.on("data",(data)=>{
-output+=data.toString()
-})
+runCmd = python ${filePath}
 
-process.stderr.on("data",(data)=>{
-error+=data.toString()
+}
+
+else if(language===“c”){
+
+filePath = path.join(codesDir,“main.c”)
+
+fs.writeFileSync(filePath,code)
+
+compileCmd = gcc ${filePath} -o ${codesDir}/main.exe
+
+runCmd = ${codesDir}/main.exe
+
+}
+
+else if(language===“cpp”){
+
+filePath = path.join(codesDir,“main.cpp”)
+
+fs.writeFileSync(filePath,code)
+
+compileCmd = g++ ${filePath} -o ${codesDir}/main.exe
+
+runCmd = ${codesDir}/main.exe
+
+}
+
+else if(language===“java”){
+
+filePath = path.join(codesDir,“Main.java”)
+
+fs.writeFileSync(filePath,code)
+
+compileCmd = javac ${filePath}
+
+runCmd = java -cp ${codesDir} Main
+
+}
+
+function executeRun(){
+
+const process = exec(runCmd,(err,stdout,stderr)=>{
+
+if(err){
+return res.json({output:err.toString()})
+}
+
+if(stderr){
+return res.json({output:stderr})
+}
+
+res.json({output:stdout})
+
 })
 
 if(input){
-process.stdin.write(input+"\n")
-}
-
+process.stdin.write(input)
 process.stdin.end()
-
-process.on("close",()=>{
-res.json({output:error || output})
-})
+}
 
 }
 
-if(language==="python"){
+if(compileCmd){
 
-filename="codes/main.py"
-fs.writeFileSync(filename,code)
+exec(compileCmd,(compileErr)=>{
 
-runProgram("python",[filename])
-
+if(compileErr){
+return res.json({output:compileErr.toString()})
 }
 
-else if(language==="c"){
-
-filename="codes/main.c"
-fs.writeFileSync(filename,code)
-
-const compile=spawn("gcc",[filename,"-o","codes/main.exe"])
-
-compile.on("close",(code)=>{
-
-if(code!==0){
-return res.json({output:"Compilation error"})
-}
-
-runProgram("codes/main.exe")
+executeRun()
 
 })
 
-}
+}else{
 
-else if(language==="cpp"){
-
-filename="codes/main.cpp"
-fs.writeFileSync(filename,code)
-
-const compile=spawn("g++",[filename,"-o","codes/main.exe"])
-
-compile.on("close",(code)=>{
-
-if(code!==0){
-return res.json({output:"Compilation error"})
-}
-
-runProgram("codes/main.exe")
-
-})
-
-}
-
-else if(language==="java"){
-
-filename="codes/Main.java"
-fs.writeFileSync(filename,code)
-
-const compile=spawn("javac",[filename])
-
-compile.on("close",(code)=>{
-
-if(code!==0){
-return res.json({output:"Compilation error"})
-}
-
-runProgram("java",["-cp","codes","Main"])
-
-})
+executeRun()
 
 }
 
 })
 
-app.listen(3000,()=>{
-console.log("AKHIL's COMPILER running at http://localhost:3000")
+const PORT = process.env.PORT || 3000
+
+app.listen(PORT,()=>{
+
+console.log(“🚀 Akhil Compiler Server Running”)
+
 })
