@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>AKHIL's COMPILER</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://unpkg.com/monaco-editor@0.34.1/min/vs/loader.js"></script>
+
+</head>
+
+<body>
+
+<div id="particles"></div>
+
+<header>
+
+<h1 id="typingTitle"></h1>
+
+<p class="subtitle">
+Online Multi-Language Code Compiler
+</p>
+
+</header>
+
+<div class="topbar">
+
+<select id="language" onchange="changeLanguage()">
+
+<option value="python">Python</option>
+<option value="c">C</option>
+<option value="cpp">C++</option>
+<option value="java">Java</option>
+
+</select>
+
+<button class="runButton" onclick="runCode()">▶ Run Code</button>
+
+<span id="runtime">Runtime: 0 ms</span>
+
+</div>
+
+<div class="mainLayout">
+
+<div class="iconSidebar">
+
+<div class="icon" onclick="setLang('python')" title="Python">🐍</div>
+
+<div class="icon" onclick="setLang('c')" title="C">C</div>
+
+<div class="icon" onclick="setLang('cpp')" title="C++">C++</div>
+
+<div class="icon" onclick="setLang('java')" title="Java">☕</div>
+
+</div>
+
+<div class="explorer">
+
+<h3>Files</h3>
+
+<ul id="fileList"></ul>
+
+<button onclick="newFile()">+ New File</button>
+
+</div>
+
+<div class="editorArea">
+
+<div id="tabs"></div>
+
+<div id="editor"></div>
+
+</div>
+
+<div class="console">
+
+<h3>Program Input</h3>
+
+<textarea id="input"></textarea>
+
+<h3>Program Output</h3>
+
+<pre id="output"></pre>
+
+</div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+
+</html>
