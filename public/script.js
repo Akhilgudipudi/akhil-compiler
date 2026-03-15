@@ -111,7 +111,7 @@ document.getElementById("output").innerText="Running..."
 
 const start=Date.now()
 
-const res=await fetch("/run",{
+const res=await fetch("https://akhil-compiler-backend.onrender.com/run"),{
 
 method:"POST",
 headers:{"Content-Type":"application/json"},
